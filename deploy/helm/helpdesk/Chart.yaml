@@ -1,0 +1,6 @@
+apiVersion: v2
+name: helpdesk
+description: Helpdesk B2B — backend Spring Boot
+type: application
+version: 0.6.0
+appVersion: "0.6.0"

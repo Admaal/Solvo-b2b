@@ -1,0 +1,52 @@
+<a class="back-link" routerLink="/tickets">← Volver al listado</a>
+
+<section class="create-card surface-card">
+  <header class="create-card__header">
+    <h1 class="page-title">Nuevo ticket</h1>
+    <p class="page-subtitle">Describe el problema y selecciona la categoría</p>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="crear()" class="create-form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Asunto</mat-label>
+      <input matInput formControlName="asunto" />
+      @if (form.controls.asunto.hasError('required')) {
+        <mat-error>El asunto es obligatorio</mat-error>
+      }
+      @if (form.controls.asunto.hasError('minlength')) {
+        <mat-error>Mínimo 5 caracteres</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Descripción</mat-label>
+      <textarea matInput rows="5" formControlName="descripcion"></textarea>
+      @if (form.controls.descripcion.hasError('required')) {
+        <mat-error>La descripción es obligatoria</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Categoría</mat-label>
+      <mat-select formControlName="codigoCategoria">
+        @for (cat of categorias; track cat) {
+          <mat-option [value]="cat">{{ cat }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    @if (categoriaCritica) {
+      <p class="warning">
+        La categoría PAGOS implica prioridad crítica según las reglas de negocio del backend.
+      </p>
+    }
+
+    <button class="btn btn--primary" type="submit" [disabled]="saving() || form.invalid">
+      @if (saving()) {
+        Creando…
+      } @else {
+        Crear ticket
+      }
+    </button>
+  </form>
+</section>

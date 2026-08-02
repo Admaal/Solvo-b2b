@@ -1,0 +1,93 @@
+<a class="back-link" routerLink="/tickets">← Volver al listado</a>
+
+@if (loading()) {
+  <div class="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+} @else if (ticket()) {
+  <section class="detail-card surface-card">
+    <header class="detail-card__header">
+      <div>
+        <h1 class="page-title">{{ ticket()!.asunto }}</h1>
+        <div class="detail-card__badges">
+          <span class="badge badge--active">{{ estadoLabel(ticket()!.estado) }}</span>
+          <span class="badge">{{ prioridadLabel(ticket()!.prioridad) }}</span>
+          <span class="badge mono">{{ ticket()!.codigoCategoria }}</span>
+        </div>
+      </div>
+    </header>
+
+    <p class="description">{{ ticket()!.descripcion }}</p>
+
+    <dl class="meta">
+      <dt>Creado</dt>
+      <dd>{{ ticket()!.creadoEn | date: 'medium' }}</dd>
+      <dt>Cliente</dt>
+      <dd>{{ ticket()!.clienteId }}</dd>
+      <dt>Agente</dt>
+      <dd>{{ ticket()!.agenteAsignadoId ?? 'Sin asignar' }}</dd>
+      @if (slaVencimiento()) {
+        <dt>SLA vence</dt>
+        <dd>{{ slaVencimiento() | date: 'medium' }}</dd>
+      }
+    </dl>
+
+    <section class="comments">
+      <h2 class="comments__title">Comentarios</h2>
+
+      @if (comentarios().length === 0) {
+        <p class="comments__empty">Aún no hay comentarios en este ticket.</p>
+      } @else {
+        <ul class="comments__list">
+          @for (comentario of comentarios(); track comentario.id) {
+            <li class="comments__item">
+              <header class="comments__meta">
+                <span class="comments__author">{{ comentario.autorEmail }}</span>
+                <time>{{ comentario.creadoEn | date: 'short' }}</time>
+              </header>
+              <p class="comments__text">{{ comentario.texto }}</p>
+            </li>
+          }
+        </ul>
+      }
+
+      <form class="comments__form" [formGroup]="comentarioForm" (ngSubmit)="enviarComentario()">
+        <mat-form-field appearance="outline" class="comments__field">
+          <mat-label>Añadir comentario</mat-label>
+          <textarea matInput rows="3" formControlName="texto"></textarea>
+        </mat-form-field>
+        <button class="btn btn--primary" type="submit" [disabled]="enviandoComentario() || comentarioForm.invalid">
+          Publicar
+        </button>
+      </form>
+    </section>
+
+    @if (puedeGestionar()) {
+      <section class="actions">
+        <h2 class="actions__title">Gestión</h2>
+
+        @if (!ticket()!.agenteAsignadoId) {
+          <button type="button" class="btn btn--ghost" (click)="asignarme()" [disabled]="saving()">
+            Asignarme el ticket
+          </button>
+        }
+
+        @if (transicionesDisponibles().length > 0) {
+          <form [formGroup]="estadoForm" (ngSubmit)="cambiarEstado()" class="estado-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Nuevo estado</mat-label>
+              <mat-select formControlName="estado">
+                @for (estado of transicionesDisponibles(); track estado) {
+                  <mat-option [value]="estado">{{ estadoLabel(estado) }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <button class="btn btn--primary" type="submit" [disabled]="saving() || estadoForm.invalid">
+              Cambiar estado
+            </button>
+          </form>
+        }
+      </section>
+    }
+  </section>
+}

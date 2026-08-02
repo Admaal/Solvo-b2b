@@ -1,0 +1,38 @@
+# Maven
+backend/target/
+backend/pit-reports/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/.jdk/
+
+# Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.cursor/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets and local env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+service-account*.json
+
+# Scripts tooling
+scripts/node_modules/
+repomix-output.xml
+repomix-output.*
+
+# Firebase local
+.firebase/
+frontend/.firebase/

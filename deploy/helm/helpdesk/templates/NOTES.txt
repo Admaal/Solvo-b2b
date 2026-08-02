@@ -1,0 +1,13 @@
+1. Obtén la URL del backend:
+
+{{- if .Values.ingress.enabled }}
+  http://{{ .Values.ingress.host }}{{ .Values.ingress.path }}
+{{- else }}
+  kubectl port-forward svc/{{ include "helpdesk.fullname" . }} 8080:{{ .Values.service.port }}
+{{- end }}
+
+2. Health check:
+  curl http://{{ .Values.ingress.host }}/actuator/health
+
+3. Para clúster local (kind/minikube):
+  helm upgrade --install helpdesk ./deploy/helm/helpdesk -f deploy/helm/helpdesk/values-local.yaml

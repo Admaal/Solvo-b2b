@@ -1,0 +1,58 @@
+replicaCount: 2
+
+image:
+  repository: helpdesk-backend
+  tag: "0.6.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  host: helpdesk.local
+  path: /
+  pathType: Prefix
+  annotations: {}
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+config:
+  corsAllowedOrigins: "http://localhost:4200"
+  jwtExpirationMinutes: "480"
+
+secrets:
+  # Sustituir en despliegue real (o usar --set / External Secrets)
+  databaseUrl: "jdbc:postgresql://postgres:5432/helpdesk"
+  databaseUsername: "helpdesk"
+  databasePassword: "helpdesk"
+  jwtSecret: "change-me-in-production-use-at-least-32-chars!!"
+
+livenessProbe:
+  path: /actuator/health/liveness
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+readinessProbe:
+  path: /actuator/health/readiness
+  initialDelaySeconds: 20
+  periodSeconds: 5
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

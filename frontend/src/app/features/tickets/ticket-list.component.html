@@ -1,0 +1,76 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Tickets</h1>
+    <p class="page-subtitle">Paginación server-side contra la API REST</p>
+  </div>
+  @if (puedeCrear()) {
+    <a class="btn btn--primary" routerLink="/tickets/nuevo">Nuevo ticket</a>
+  }
+</div>
+
+<div class="filters">
+  <mat-form-field appearance="outline">
+    <mat-label>Estado</mat-label>
+    <mat-select
+      [value]="estadoFiltro()"
+      (selectionChange)="estadoFiltro.set($event.value); onFiltroChange()"
+    >
+      <mat-option value="">Todos</mat-option>
+      @for (estado of estados; track estado) {
+        <mat-option [value]="estado">{{ estadoLabel(estado) }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Prioridad</mat-label>
+    <mat-select
+      [value]="prioridadFiltro()"
+      (selectionChange)="prioridadFiltro.set($event.value); onFiltroChange()"
+    >
+      <mat-option value="">Todas</mat-option>
+      @for (prioridad of prioridades; track prioridad) {
+        <mat-option [value]="prioridad">{{ prioridadLabel(prioridad) }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>
+
+@if (loading()) {
+  <div class="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+} @else {
+  <div class="ticket-grid">
+    @for (ticket of tickets(); track ticket.id) {
+      <article class="ticket-card surface-card">
+        <div class="ticket-card__header">
+          <h2 class="ticket-card__title">{{ ticket.asunto }}</h2>
+          <span class="badge" [class.badge--active]="ticket.estado === 'EN_PROGRESO'">
+            {{ estadoLabel(ticket.estado) }}
+          </span>
+        </div>
+        <div class="ticket-card__meta">
+          <span>{{ prioridadLabel(ticket.prioridad) }}</span>
+          <span>·</span>
+          <span>{{ ticket.codigoCategoria }}</span>
+          <span>·</span>
+          <span>{{ ticket.creadoEn | date: 'short' }}</span>
+        </div>
+        <button type="button" class="btn btn--text ticket-card__action" (click)="verDetalle(ticket)">
+          Ver detalle
+        </button>
+      </article>
+    } @empty {
+      <p class="empty-state">No hay tickets con los filtros seleccionados.</p>
+    }
+  </div>
+
+  <mat-paginator
+    [length]="totalElements()"
+    [pageIndex]="pageIndex()"
+    [pageSize]="pageSize()"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="onPage($event)"
+  ></mat-paginator>
+}

@@ -1,0 +1,52 @@
+<div class="announcement-bar">Demo B2B — usuarios de prueba disponibles en el panel de acceso</div>
+
+<div class="login-page">
+  <div class="login-layout">
+    <section class="login-hero">
+      <p class="login-hero__eyebrow">Solvo Helpdesk</p>
+      <h1 class="login-hero__title">Soporte institucional para equipos B2B</h1>
+      <p class="login-hero__lead">Gestiona incidencias, prioridades y SLA con la precisión de un terminal financiero.</p>
+    </section>
+
+    <section class="login-panel surface-card">
+      <h2 class="login-panel__title">Iniciar sesión</h2>
+      <p class="login-panel__subtitle">Selecciona un rol de demostración</p>
+
+      <div class="demo-buttons">
+        @for (user of demoUsers; track user.email) {
+          <button
+            type="button"
+            class="btn btn--ghost demo-button"
+            [disabled]="loading()"
+            (click)="entrarComo(user.email)"
+          >
+            Entrar como {{ user.label }}
+          </button>
+        }
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="login()" class="login-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <mat-select formControlName="email">
+            @for (user of demoUsers; track user.email) {
+              <mat-option [value]="user.email">{{ user.label }} — {{ user.email }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+
+        <button class="btn btn--primary login-submit" type="submit" [disabled]="loading() || form.invalid">
+          @if (loading()) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            Iniciar sesión
+          }
+        </button>
+      </form>
+    </section>
+  </div>
+</div>

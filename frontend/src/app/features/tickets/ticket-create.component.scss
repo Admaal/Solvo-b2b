@@ -1,0 +1,27 @@
+.create-card {
+  max-width: 640px;
+
+  &__header {
+    margin-bottom: var(--spacing-24);
+  }
+}
+
+.create-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.warning {
+  margin: 0;
+  padding: var(--spacing-12) var(--spacing-16);
+  background: var(--color-mint-tint);
+  border: 1px solid var(--color-mint-signal);
+  border-radius: var(--radius-inputs);
+  color: var(--color-slate-600);
+  font-size: var(--text-caption);
+}

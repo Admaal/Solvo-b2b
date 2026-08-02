@@ -1,0 +1,21 @@
+@if (isAuthenticated()) {
+  <header class="app-nav">
+    <div class="app-nav__inner">
+      <span class="app-nav__brand">Solvo Helpdesk</span>
+      <nav class="app-nav__links">
+        <a routerLink="/tickets" routerLinkActive="active">Tickets</a>
+        @if (esAdmin()) {
+          <a routerLink="/admin" routerLinkActive="active">Admin</a>
+        }
+      </nav>
+      <div class="app-nav__actions">
+        <span class="app-nav__user mono">{{ currentUser()?.email }} · {{ currentUser()?.rol }}</span>
+        <button type="button" class="app-nav__logout" (click)="logout()">Salir</button>
+      </div>
+    </div>
+  </header>
+}
+
+<main class="content" [class.authenticated]="isAuthenticated()">
+  <router-outlet />
+</main>

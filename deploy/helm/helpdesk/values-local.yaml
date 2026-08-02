@@ -1,0 +1,12 @@
+replicaCount: 1
+
+image:
+  pullPolicy: Never
+
+ingress:
+  enabled: true
+  className: nginx
+  host: helpdesk.local
+
+autoscaling:
+  enabled: false
