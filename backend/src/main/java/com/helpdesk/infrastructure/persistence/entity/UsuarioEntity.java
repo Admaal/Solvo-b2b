@@ -23,6 +23,9 @@ public class UsuarioEntity {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(name = "password_hash", nullable = false, length = 100)
+    private String passwordHash;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Rol rol;
@@ -41,12 +44,14 @@ public class UsuarioEntity {
     public UsuarioEntity(
             UUID id,
             String email,
+            String passwordHash,
             Rol rol,
             OrganizacionEntity organizacion,
             EquipoEntity equipo
     ) {
         this.id = id;
         this.email = email;
+        this.passwordHash = passwordHash;
         this.rol = rol;
         this.organizacion = organizacion;
         this.equipo = equipo;
@@ -58,6 +63,10 @@ public class UsuarioEntity {
 
     public String getEmail() {
         return email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
     public Rol getRol() {

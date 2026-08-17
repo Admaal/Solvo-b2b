@@ -10,4 +10,6 @@ public interface UsuarioRepository {
     Optional<Usuario> buscarPorId(UsuarioId id);
 
     Optional<Usuario> buscarPorEmail(String email);
+
+    Optional<CredencialesLogin> buscarCredencialesPorEmail(String email);
 }

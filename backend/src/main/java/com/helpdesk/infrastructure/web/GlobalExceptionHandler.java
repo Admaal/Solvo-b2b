@@ -2,6 +2,7 @@ package com.helpdesk.infrastructure.web;
 
 import com.helpdesk.domain.exception.AccesoDenegadoException;
 import com.helpdesk.domain.exception.AsignacionNoPermitidaException;
+import com.helpdesk.domain.exception.AutenticacionFallidaException;
 import com.helpdesk.domain.exception.CreacionTicketInvalidaException;
 import com.helpdesk.domain.exception.RecursoNoEncontradoException;
 import com.helpdesk.domain.exception.TransicionEstadoInvalidaException;
@@ -19,6 +20,15 @@ import java.time.Instant;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AutenticacionFallidaException.class)
+    public ResponseEntity<ErrorResponse> autenticacionFallida(
+            AutenticacionFallidaException ex,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(error(HttpStatus.UNAUTHORIZED, "Credenciales inválidas", request.getRequestURI()));
+    }
 
     @ExceptionHandler(RecursoNoEncontradoException.class)
     public ResponseEntity<ErrorResponse> noEncontrado(

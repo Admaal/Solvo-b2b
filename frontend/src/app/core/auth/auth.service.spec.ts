@@ -32,7 +32,7 @@ describe('AuthService', () => {
       organizacionId: '11111111-1111-1111-1111-111111111111',
     };
 
-    service.login({ email: response.email }).subscribe((result) => {
+    service.login({ email: response.email, password: 'demo' }).subscribe((result) => {
       expect(result).toEqual(response);
       expect(service.isAuthenticated()).toBeTrue();
       expect(service.rol()).toBe('CLIENTE');
@@ -52,7 +52,7 @@ describe('AuthService', () => {
       organizacionId: '11111111-1111-1111-1111-111111111111',
     };
 
-    service.login({ email: response.email }).subscribe();
+    service.login({ email: response.email, password: 'demo' }).subscribe();
     httpMock.expectOne('/api/v1/auth/login').flush(response);
     expect(service.isAuthenticated()).toBeTrue();
 

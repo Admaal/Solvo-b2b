@@ -50,6 +50,7 @@ export class TicketListComponent implements OnInit {
 
   readonly tickets = signal<Ticket[]>([]);
   readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
   readonly totalElements = signal(0);
   readonly pageIndex = signal(0);
   readonly pageSize = signal(20);
@@ -68,6 +69,7 @@ export class TicketListComponent implements OnInit {
     }
 
     this.loading.set(true);
+    this.error.set(null);
 
     this.ticketService
       .listar({
@@ -84,7 +86,11 @@ export class TicketListComponent implements OnInit {
           this.totalElements.set(pagina.totalElementos);
           this.loading.set(false);
         },
-        error: () => this.loading.set(false),
+        error: () => {
+          this.tickets.set([]);
+          this.error.set('No se pudieron cargar los tickets. Comprueba que el backend está en marcha.');
+          this.loading.set(false);
+        },
       });
   }
 

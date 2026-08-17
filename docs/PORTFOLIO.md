@@ -11,7 +11,7 @@ Demuestra arquitectura hexagonal real, RBAC navegable, comentarios en tickets, A
 | Frontend | Angular 19, Standalone, Signals, Angular Material |
 | Base de datos | PostgreSQL (local Docker / Supabase en prod) |
 | Tests | JUnit 5, Mockito, ArchUnit, PIT, Testcontainers, Jasmine |
-| Infra | Docker slim, Helm, GitHub Actions, Cloud Run, Firebase Hosting |
+| Infra | Docker slim, Helm, GitHub Actions, Cloud Run, Vercel |
 
 ## Arquitectura hexagonal
 
@@ -44,24 +44,30 @@ Demuestra arquitectura hexagonal real, RBAC navegable, comentarios en tickets, A
 | Gestor | Ver todos, asignarse, cambiar estado, comentar |
 | Administrador | Igual que gestor + ruta `/admin` (RBAC demo, sin CRUD) |
 
-**Auth demo:** login por email sin contraseña — pensado para que un reclutador pruebe la app en segundos.
+**Auth demo:** email + contraseña `demo` (un clic en la UI). No es auth bancaria; sí impide entrar como admin solo con el email. Respuesta de login genérica (401, sin enumerar usuarios).
+
+**Aislamiento de tenant:** `organizacionId` y `clienteId` al crear salen del JWT. Cambiar estado y asignar exigen que el solicitante pertenezca a la organización del ticket.
+
+**JWT en `localStorage`:** decisión consciente de SPA demo. Cookie HttpOnly rompería el flujo Angular simple; no es el modelo de un banco en producción.
 
 ## Calidad (valla mecánica)
 
 - **ArchUnit** — `domain/` y `application/` no importan Spring/JPA
-- **PIT** — mutation score ≥ 75% en dominio y aplicación
-- **Testcontainers** — flujo JPA + API REST + RBAC contra PostgreSQL real
+- **PIT** — mutation score ≥ 75% en dominio y aplicación (gate de CI)
+- **Testcontainers** — flujo JPA + API REST + RBAC + aislamiento multi-org contra PostgreSQL real
 - **Helm lint + kubeconform** — manifiestos K8s válidos en CI
 - **Hooks Cursor** — gate rápido en cada edición Java
 
 ## Datos demo (local y prod)
 
-Al arrancar el backend con BD vacía (`ticketRepository.count() == 0`):
+Al arrancar el backend con BD vacía (`ticketRepository.count() == 0`) y `HELPDESK_DEMO_DATA=true`:
 
-- 3 usuarios: `cliente@bancoa.demo`, `gestor@bancoa.demo`, `admin@bancoa.demo`
+- 3 usuarios: `cliente@bancoa.demo`, `gestor@bancoa.demo`, `admin@bancoa.demo` (contraseña `demo`)
 - **9 tickets** en estados ABIERTO, EN_PROGRESO, RESUELTO y CERRADO
 - Categorías ACCESOS, PAGOS, TARJETAS, CONTRATOS (prioridades distintas)
 - Comentarios demo en tickets en progreso
+
+En **prod** el seed está apagado salvo `HELPDESK_DEMO_DATA=true` (flag explícito para el demo de portfolio). Swagger/OpenAPI no se publica en prod.
 
 **Importante:** local (Docker Postgres) y prod (Supabase) son bases distintas. El seed solo corre en BD vacía. Reset local: `.\scripts\reset-local-db.ps1`.
 
@@ -72,7 +78,7 @@ En `docs/screenshots/`:
 1. `01-login.png` — selector de rol demo
 2. `02-tickets-grid.png` — grid con paginación y filtros
 3. `03-ticket-detalle.png` — detalle + comentarios + SLA
-4. `04-swagger.png` — Swagger UI
+4. `04-swagger.png` — Swagger UI (solo local)
 
 Generar: `.\scripts\capture-screenshots.ps1`
 
@@ -80,15 +86,17 @@ Generar: `.\scripts\capture-screenshots.ps1`
 
 | Entorno | Plataforma | Motivo |
 |---------|------------|--------|
-| Demo pública | Cloud Run (`min-instances=0`) | Coste $0 en reposo |
+| Demo pública API | Cloud Run (`min-instances=0`) | Coste $0 en reposo |
+| Frontend | Vercel | Estático SPA; llama a Cloud Run por URL absoluta |
 | Portfolio K8s | Helm en `kind` bajo demanda | Competencia K8s sin GKE 24/7 |
 | BD producción | Supabase free tier | Evita Cloud SQL de pago |
-| Frontend | Firebase Hosting | Estático + rewrite `/api` a Cloud Run |
 | Secretos | Un JSON en Secret Manager | Cuota free tier (1 secret) |
 | Imagen Docker | JRE Alpine + fat JAR | ~210 MB; borrar digests antiguos en registry |
+
+Orden de go-live: esquema Supabase → Cloud Run → Vercel con `NG_APP_API_URL`.
 
 ## Enlaces
 
 - Repositorio: https://github.com/Admaal/Solvo-b2b
-- Demo live: desplegar con [docs/SETUP-GITHUB.md](SETUP-GITHUB.md) o `scripts/deploy-demo.ps1`
-- API Swagger: `{BACKEND_URL}/swagger-ui.html` (local: http://localhost:8080/swagger-ui.html)
+- Demo live: desplegar con [docs/SETUP-GITHUB.md](SETUP-GITHUB.md) o `scripts/deploy-demo.ps1` (API) + Vercel
+- API Swagger: solo local — http://localhost:8080/swagger-ui.html

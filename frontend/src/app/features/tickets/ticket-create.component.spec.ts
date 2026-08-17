@@ -119,8 +119,6 @@ describe('TicketCreateComponent', () => {
       asunto: 'Asunto válido',
       descripcion: 'Descripción con longitud suficiente',
       codigoCategoria: 'ACCESOS',
-      organizacionId: ORG_ID,
-      clienteId: USER_ID,
     });
     expect(snackBar.open).toHaveBeenCalledWith('Ticket creado', 'Cerrar', {
       duration: 3000,

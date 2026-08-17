@@ -93,6 +93,22 @@ class AsignarTicketTest {
     }
 
     @Test
+    void gestorDeOtraOrganizacionNoPuedeAsignar() {
+        OrganizacionId otraOrg = OrganizacionId.of(UUID.randomUUID());
+        when(ticketRepository.buscarPorId(ticketId)).thenReturn(Optional.of(ticket));
+        when(usuarioRepository.buscarPorId(solicitanteId)).thenReturn(Optional.of(
+                new Usuario(solicitanteId, "gestor@bancob.test", otraOrg, Rol.GESTOR, equipoId)
+        ));
+        when(usuarioRepository.buscarPorId(agenteId)).thenReturn(Optional.of(
+                new Usuario(agenteId, "agente@banco.test", organizacionId, Rol.GESTOR, equipoId)
+        ));
+
+        assertThrows(AsignacionNoPermitidaException.class, () -> asignarTicket.ejecutar(
+                new AsignarTicket.Comando(ticketId, solicitanteId, agenteId)
+        ));
+    }
+
+    @Test
     void rechazaTicketInexistente() {
         when(ticketRepository.buscarPorId(ticketId)).thenReturn(Optional.empty());
 

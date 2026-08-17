@@ -15,7 +15,9 @@ public record TicketResponse(
         String codigoCategoria,
         UUID organizacionId,
         UUID clienteId,
+        String clienteEmail,
         UUID agenteAsignadoId,
+        String agenteEmail,
         Instant creadoEn
 ) {
 }

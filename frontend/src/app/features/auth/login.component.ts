@@ -6,7 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../core/auth/auth.service';
-import { DEMO_USERS } from '../../core/models/auth.model';
+import { DEMO_USERS, DemoUser } from '../../core/models/auth.model';
 
 @Component({
   selector: 'app-login',
@@ -34,9 +34,9 @@ export class LoginComponent {
     email: ['', Validators.required],
   });
 
-  entrarComo(email: string): void {
-    this.form.patchValue({ email });
-    this.login();
+  entrarComo(user: DemoUser): void {
+    this.form.patchValue({ email: user.email });
+    this.enviar(user.email, user.password);
   }
 
   login(): void {
@@ -44,14 +44,19 @@ export class LoginComponent {
       this.form.markAllAsTouched();
       return;
     }
+    const email = this.form.controls.email.value;
+    const user = this.demoUsers.find((item) => item.email === email);
+    this.enviar(email, user?.password ?? '');
+  }
 
+  private enviar(email: string, password: string): void {
     this.loading.set(true);
     this.error.set(null);
 
-    this.auth.login({ email: this.form.controls.email.value }).subscribe({
+    this.auth.login({ email, password }).subscribe({
       next: () => this.router.navigate(['/tickets']),
       error: () => {
-        this.error.set('No se pudo iniciar sesión. Verifica que el backend esté en marcha.');
+        this.error.set('No se pudo iniciar sesión. Verifica email, contraseña y que el backend esté en marcha.');
         this.loading.set(false);
       },
       complete: () => this.loading.set(false),

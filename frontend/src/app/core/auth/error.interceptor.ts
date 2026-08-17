@@ -26,6 +26,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           'Cerrar',
           { duration: 4000 }
         );
+      } else if (error.status === 0 || error.status >= 500) {
+        snackBar.open('Error de servidor o de red. Inténtalo de nuevo.', 'Cerrar', { duration: 5000 });
       } else if (
         error.status === 400 &&
         !req.url.includes('/auth/login') &&

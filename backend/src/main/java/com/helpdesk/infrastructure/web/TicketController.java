@@ -116,11 +116,12 @@ public class TicketController {
     @PreAuthorize("hasRole('CLIENTE')")
     @Operation(summary = "Crear ticket")
     public ResponseEntity<TicketResponse> crear(@Valid @RequestBody CrearTicketRequest request) {
+        Usuario solicitante = usuarioActualProvider.obtenerUsuarioActual();
         Ticket ticket = crearTicket.ejecutar(new CrearTicket.Comando(
                 request.asunto(),
                 request.descripcion(),
-                OrganizacionId.of(request.organizacionId()),
-                UsuarioId.of(request.clienteId()),
+                solicitante.organizacionId(),
+                solicitante.id(),
                 request.codigoCategoria()
         ));
         return ResponseEntity.status(HttpStatus.CREATED).body(ticketDtoMapper.toResponse(ticket));
@@ -133,7 +134,9 @@ public class TicketController {
             @PathVariable UUID id,
             @Valid @RequestBody CambiarEstadoRequest request
     ) {
+        Usuario solicitante = usuarioActualProvider.obtenerUsuarioActual();
         Ticket ticket = cambiarEstadoTicket.ejecutar(new CambiarEstadoTicket.Comando(
+                solicitante,
                 TicketId.of(id),
                 request.estado()
         ));

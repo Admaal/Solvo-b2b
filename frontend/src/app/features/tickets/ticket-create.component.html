@@ -16,6 +16,9 @@
       @if (form.controls.asunto.hasError('minlength')) {
         <mat-error>Mínimo 5 caracteres</mat-error>
       }
+      @if (form.controls.asunto.hasError('maxlength')) {
+        <mat-error>Máximo 200 caracteres</mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width">
@@ -23,6 +26,12 @@
       <textarea matInput rows="5" formControlName="descripcion"></textarea>
       @if (form.controls.descripcion.hasError('required')) {
         <mat-error>La descripción es obligatoria</mat-error>
+      }
+      @if (form.controls.descripcion.hasError('minlength')) {
+        <mat-error>Mínimo 10 caracteres</mat-error>
+      }
+      @if (form.controls.descripcion.hasError('maxlength')) {
+        <mat-error>Máximo 4000 caracteres</mat-error>
       }
     </mat-form-field>
 

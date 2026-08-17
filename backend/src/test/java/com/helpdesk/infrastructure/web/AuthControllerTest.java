@@ -46,7 +46,7 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new com.helpdesk.infrastructure.web.dto.LoginRequest("gestor@banco.test")
+                                new com.helpdesk.infrastructure.web.dto.LoginRequest("gestor@banco.test", "demo")
                         )))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("token-jwt"))

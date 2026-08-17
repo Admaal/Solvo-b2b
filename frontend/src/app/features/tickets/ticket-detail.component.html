@@ -1,9 +1,11 @@
 <a class="back-link" routerLink="/tickets">← Volver al listado</a>
 
 @if (loading()) {
-  <div class="loading">
+  <div class="loading" role="status" aria-label="Cargando ticket">
     <mat-spinner diameter="40"></mat-spinner>
   </div>
+} @else if (error()) {
+  <p class="empty-state">{{ error() }}</p>
 } @else if (ticket()) {
   <section class="detail-card surface-card">
     <header class="detail-card__header">
@@ -23,9 +25,9 @@
       <dt>Creado</dt>
       <dd>{{ ticket()!.creadoEn | date: 'medium' }}</dd>
       <dt>Cliente</dt>
-      <dd>{{ ticket()!.clienteId }}</dd>
+      <dd>{{ ticket()!.clienteEmail || 'Cliente' }}</dd>
       <dt>Agente</dt>
-      <dd>{{ ticket()!.agenteAsignadoId ?? 'Sin asignar' }}</dd>
+      <dd>{{ ticket()!.agenteEmail || 'Sin asignar' }}</dd>
       @if (slaVencimiento()) {
         <dt>SLA vence</dt>
         <dd>{{ slaVencimiento() | date: 'medium' }}</dd>
@@ -43,7 +45,7 @@
             <li class="comments__item">
               <header class="comments__meta">
                 <span class="comments__author">{{ comentario.autorEmail }}</span>
-                <time>{{ comentario.creadoEn | date: 'short' }}</time>
+                <time [attr.datetime]="comentario.creadoEn">{{ comentario.creadoEn | date: 'short' }}</time>
               </header>
               <p class="comments__text">{{ comentario.texto }}</p>
             </li>
@@ -55,6 +57,9 @@
         <mat-form-field appearance="outline" class="comments__field">
           <mat-label>Añadir comentario</mat-label>
           <textarea matInput rows="3" formControlName="texto"></textarea>
+          @if (comentarioForm.controls.texto.touched && comentarioForm.controls.texto.invalid) {
+            <mat-error>El comentario debe tener entre 3 y 2000 caracteres.</mat-error>
+          }
         </mat-form-field>
         <button class="btn btn--primary" type="submit" [disabled]="enviandoComentario() || comentarioForm.invalid">
           Publicar

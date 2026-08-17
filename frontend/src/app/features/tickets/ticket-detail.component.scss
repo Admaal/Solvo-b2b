@@ -134,3 +134,14 @@
     width: 100%;
   }
 }
+
+.empty-state {
+  color: var(--color-graphite);
+  font-size: var(--text-caption);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-48);
+}

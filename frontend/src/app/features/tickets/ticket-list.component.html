@@ -37,9 +37,11 @@
 </div>
 
 @if (loading()) {
-  <div class="loading">
+  <div class="loading" role="status" aria-label="Cargando tickets">
     <mat-spinner diameter="40"></mat-spinner>
   </div>
+} @else if (error()) {
+  <p class="empty-state">{{ error() }}</p>
 } @else {
   <div class="ticket-grid">
     @for (ticket of tickets(); track ticket.id) {

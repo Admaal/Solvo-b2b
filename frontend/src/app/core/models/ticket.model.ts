@@ -10,7 +10,9 @@ export interface Ticket {
   codigoCategoria: string;
   organizacionId: string;
   clienteId: string;
+  clienteEmail?: string | null;
   agenteAsignadoId: string | null;
+  agenteEmail?: string | null;
   creadoEn: string;
 }
 
@@ -25,8 +27,6 @@ export interface PaginaResponse<T> {
 export interface CrearTicketRequest {
   asunto: string;
   descripcion: string;
-  organizacionId: string;
-  clienteId: string;
   codigoCategoria: string;
 }
 

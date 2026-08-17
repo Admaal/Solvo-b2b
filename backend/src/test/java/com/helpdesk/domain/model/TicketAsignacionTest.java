@@ -51,6 +51,20 @@ class TicketAsignacionTest {
     }
 
     @Test
+    void gestorDeOtraOrganizacionNoPuedeAsignar() {
+        Usuario gestorExterno = new Usuario(
+                UsuarioId.of(UUID.randomUUID()),
+                "externo@otro.test",
+                OrganizacionId.of(UUID.randomUUID()),
+                Rol.GESTOR,
+                equipoId
+        );
+
+        assertThrows(AsignacionNoPermitidaException.class,
+                () -> ticket.asignarAgente(gestorExterno, agente));
+    }
+
+    @Test
     void agenteDeOtraOrganizacionNoPuedeAsignarse() {
         Usuario agenteExterno = new Usuario(
                 UsuarioId.of(UUID.randomUUID()),

@@ -62,13 +62,11 @@ class TicketControllerSecurityTest {
                         .contentType("application/json")
                         .content("""
                                 {
-                                  "asunto": "Test",
-                                  "descripcion": "Detalle",
-                                  "organizacionId": "%s",
-                                  "clienteId": "%s",
+                                  "asunto": "Test ticket válido",
+                                  "descripcion": "Detalle con longitud suficiente",
                                   "codigoCategoria": "ACCESOS"
                                 }
-                                """.formatted(UUID.randomUUID(), UUID.randomUUID())))
+                                """))
                 .andExpect(status().isForbidden());
     }
 }

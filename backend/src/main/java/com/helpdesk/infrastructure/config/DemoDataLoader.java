@@ -23,13 +23,16 @@ import com.helpdesk.infrastructure.persistence.jpa.SpringDataTicketRepository;
 import com.helpdesk.infrastructure.persistence.jpa.SpringDataUsuarioRepository;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
 @Component
 @Profile("!integration-test")
+@ConditionalOnProperty(name = "helpdesk.demo-data.enabled", havingValue = "true")
 public class DemoDataLoader implements ApplicationRunner {
 
     public static final UUID ORGANIZACION_DEMO_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
@@ -41,6 +44,7 @@ public class DemoDataLoader implements ApplicationRunner {
     public static final String CATEGORIA_PAGOS = "PAGOS";
     public static final String CATEGORIA_TARJETAS = "TARJETAS";
     public static final String CATEGORIA_CONTRATOS = "CONTRATOS";
+    public static final String PASSWORD_DEMO = "demo";
 
     private final SpringDataOrganizacionRepository organizacionRepository;
     private final SpringDataEquipoRepository equipoRepository;
@@ -51,6 +55,7 @@ public class DemoDataLoader implements ApplicationRunner {
     private final AsignarTicket asignarTicket;
     private final CambiarEstadoTicket cambiarEstadoTicket;
     private final AgregarComentario agregarComentario;
+    private final PasswordEncoder passwordEncoder;
 
     public DemoDataLoader(
             SpringDataOrganizacionRepository organizacionRepository,
@@ -61,7 +66,8 @@ public class DemoDataLoader implements ApplicationRunner {
             CrearTicket crearTicket,
             AsignarTicket asignarTicket,
             CambiarEstadoTicket cambiarEstadoTicket,
-            AgregarComentario agregarComentario
+            AgregarComentario agregarComentario,
+            PasswordEncoder passwordEncoder
     ) {
         this.organizacionRepository = organizacionRepository;
         this.equipoRepository = equipoRepository;
@@ -72,6 +78,7 @@ public class DemoDataLoader implements ApplicationRunner {
         this.asignarTicket = asignarTicket;
         this.cambiarEstadoTicket = cambiarEstadoTicket;
         this.agregarComentario = agregarComentario;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -104,12 +111,13 @@ public class DemoDataLoader implements ApplicationRunner {
         EquipoEntity equipo = equipoRepository.save(
                 new EquipoEntity(EQUIPO_DEMO_ID, "Soporte N1", organizacion));
 
+        String hash = passwordEncoder.encode(PASSWORD_DEMO);
         usuarioRepository.save(new UsuarioEntity(
-                CLIENTE_DEMO_ID, "cliente@bancoa.demo", Rol.CLIENTE, organizacion, null));
+                CLIENTE_DEMO_ID, "cliente@bancoa.demo", hash, Rol.CLIENTE, organizacion, null));
         usuarioRepository.save(new UsuarioEntity(
-                GESTOR_DEMO_ID, "gestor@bancoa.demo", Rol.GESTOR, organizacion, equipo));
+                GESTOR_DEMO_ID, "gestor@bancoa.demo", hash, Rol.GESTOR, organizacion, equipo));
         usuarioRepository.save(new UsuarioEntity(
-                ADMIN_DEMO_ID, "admin@bancoa.demo", Rol.ADMINISTRADOR, organizacion, equipo));
+                ADMIN_DEMO_ID, "admin@bancoa.demo", hash, Rol.ADMINISTRADOR, organizacion, equipo));
     }
 
     private void sembrarTickets() {
@@ -141,7 +149,7 @@ public class DemoDataLoader implements ApplicationRunner {
                         "Transferencia internacional bloqueada",
                         "Operación REF-88421 pendiente de revisión antifraude.",
                         organizacionId, clienteId, CATEGORIA_PAGOS)),
-                gestorId, gestorId, EstadoTicket.EN_PROGRESO);
+                gestor, EstadoTicket.EN_PROGRESO);
         comentar(gestor, transferencia, "Escalado a equipo antifraude. SLA crítico activo.");
         comentar(cliente, transferencia, "Necesito la operación hoy para cierre de proveedor.");
 
@@ -150,7 +158,7 @@ public class DemoDataLoader implements ApplicationRunner {
                         "Incidencia en firma digital de contrato",
                         "El proceso se queda en paso 3 al subir el PDF.",
                         organizacionId, clienteId, CATEGORIA_CONTRATOS)),
-                gestorId, gestorId, EstadoTicket.EN_PROGRESO);
+                gestor, EstadoTicket.EN_PROGRESO);
 
         // RESUELTO (2)
         Ticket mfa = avanzarHasta(
@@ -158,7 +166,7 @@ public class DemoDataLoader implements ApplicationRunner {
                         "Reset de contraseña MFA",
                         "Usuario bloqueado tras 5 intentos en app móvil.",
                         organizacionId, clienteId, CATEGORIA_ACCESOS)),
-                gestorId, gestorId, EstadoTicket.RESUELTO);
+                gestor, EstadoTicket.RESUELTO);
         comentar(gestor, mfa, "MFA restablecido y verificado con el cliente por teléfono.");
 
         avanzarHasta(
@@ -166,7 +174,7 @@ public class DemoDataLoader implements ApplicationRunner {
                         "Duplicado en cargo de comisión",
                         "Aparecen dos cargos idénticos en extracto de marzo.",
                         organizacionId, clienteId, CATEGORIA_PAGOS)),
-                gestorId, gestorId, EstadoTicket.RESUELTO);
+                gestor, EstadoTicket.RESUELTO);
 
         // CERRADO (2)
         avanzarHasta(
@@ -174,14 +182,14 @@ public class DemoDataLoader implements ApplicationRunner {
                         "Certificado digital expirado",
                         "Renovación completada con proveedor PKI.",
                         organizacionId, clienteId, CATEGORIA_ACCESOS)),
-                gestorId, gestorId, EstadoTicket.CERRADO);
+                gestor, EstadoTicket.CERRADO);
 
         avanzarHasta(
                 crearTicket.ejecutar(comando(
                         "Solicitud de ampliación de límite TPV",
                         "Límite diario actualizado según política de riesgos.",
                         organizacionId, clienteId, CATEGORIA_TARJETAS)),
-                gestorId, gestorId, EstadoTicket.CERRADO);
+                gestor, EstadoTicket.CERRADO);
     }
 
     private CrearTicket.Comando comando(
@@ -194,18 +202,13 @@ public class DemoDataLoader implements ApplicationRunner {
         return new CrearTicket.Comando(asunto, descripcion, organizacionId, clienteId, categoria);
     }
 
-    private Ticket avanzarHasta(
-            Ticket ticket,
-            UsuarioId gestorId,
-            UsuarioId solicitanteId,
-            EstadoTicket estadoObjetivo
-    ) {
-        asignarTicket.ejecutar(new AsignarTicket.Comando(ticket.id(), solicitanteId, gestorId));
+    private Ticket avanzarHasta(Ticket ticket, Usuario gestor, EstadoTicket estadoObjetivo) {
+        asignarTicket.ejecutar(new AsignarTicket.Comando(ticket.id(), gestor.id(), gestor.id()));
 
         Ticket actual = ticket;
         while (actual.estado() != estadoObjetivo) {
             EstadoTicket siguiente = siguienteEstadoHacia(actual.estado(), estadoObjetivo);
-            actual = cambiarEstadoTicket.ejecutar(new CambiarEstadoTicket.Comando(actual.id(), siguiente));
+            actual = cambiarEstadoTicket.ejecutar(new CambiarEstadoTicket.Comando(gestor, actual.id(), siguiente));
         }
         return actual;
     }

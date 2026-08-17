@@ -1,7 +1,10 @@
 # Despliegue en Google Cloud Run
 
-La demo pública corre en **Cloud Run** (`min-instances=0`) para coste $0 en reposo.
+La demo pública de la **API** corre en **Cloud Run** (`min-instances=0`) para coste $0 en reposo.
+El frontend se sirve en **Vercel** y llama a esta API por URL absoluta.
 Kubernetes (Helm) se usa bajo demanda en clúster local para demostraciones.
+
+Haz esto **después** de tener el código auditado (fases 1–3) y las tablas creadas en Supabase.
 
 ## Prerrequisitos GCP
 
@@ -19,6 +22,8 @@ Kubernetes (Helm) se usa bajo demanda en clúster local para demostraciones.
 }
 ```
 
+`JWT_SECRET` debe tener ≥ 32 caracteres y **no** coincidir con el default de `application.properties`.
+
 ## Secrets de GitHub (Settings → Secrets)
 
 | Secret | Ejemplo |
@@ -31,11 +36,11 @@ Kubernetes (Helm) se usa bajo demanda en clúster local para demostraciones.
 
 | Variable | Ejemplo |
 |----------|---------|
-| `CORS_ALLOWED_ORIGINS` | `https://helpdesk-demo.web.app` |
+| `CORS_ALLOWED_ORIGINS` | `https://tu-app.vercel.app` |
 
 ## Imagen Docker (Artifact Registry)
 
-La imagen usa **JRE Alpine + fat JAR** (~210 MB). El free tier de Artifact Registry (~512 MB) cabe 2 tags si borras digests antiguos.
+La imagen usa **JRE Alpine + fat JAR** (~210 MB). El free tier de Artifact Registry (~512 MB) cabe 2 tags si borras digests antiguos. No persigas 100 MB: no merece la pena.
 
 ```bash
 docker build -t helpdesk-backend:local backend
@@ -49,6 +54,10 @@ gcloud artifacts docker images list REGION-docker.pkg.dev/PROJECT/helpdesk/helpd
 gcloud artifacts docker images delete IMAGE@DIGEST --quiet
 ```
 
+## Tablas en Supabase (obligatorio antes de `validate`)
+
+Prod usa `spring.jpa.hibernate.ddl-auto=validate`. Crea el esquema con [docs/supabase-schema.sql](../../docs/supabase-schema.sql) o un arranque único local contra Supabase con perfil `local`.
+
 ## Despliegue manual
 
 ```bash
@@ -57,30 +66,29 @@ gcloud auth configure-docker REGION-docker.pkg.dev
 docker build -t REGION-docker.pkg.dev/PROJECT/helpdesk/helpdesk-backend:latest backend
 docker push REGION-docker.pkg.dev/PROJECT/helpdesk/helpdesk-backend:latest
 
-# Deploy (un solo secret)
+# Deploy (un solo secret + seed de portfolio)
 gcloud run deploy helpdesk-api \
   --image REGION-docker.pkg.dev/PROJECT/helpdesk/helpdesk-backend:latest \
   --region REGION \
   --allow-unauthenticated \
   --min-instances 0 \
-  --set-env-vars SPRING_PROFILES_ACTIVE=prod,CORS_ALLOWED_ORIGINS=https://TU-PROYECTO.web.app \
+  --set-env-vars SPRING_PROFILES_ACTIVE=prod,HELPDESK_DEMO_DATA=true,CORS_ALLOWED_ORIGINS=https://TU-PROYECTO.vercel.app \
   --set-secrets HELPDESK_RUNTIME_JSON=helpdesk-runtime:latest
 ```
 
+Asistido: `.\scripts\deploy-demo.ps1 -GcpProjectId ... -GcpRegion ... -CorsOrigin https://tu-app.vercel.app`
+
+CI en `main` despliega igual si existen los secrets GCP; si no, el job se omite.
+
 ## Seed de datos demo
 
-Al arrancar contra una **BD vacía**, `DemoDataLoader` siembra 9 tickets en todos los estados + comentarios.
-Si ya hay tickets, no se re-siembra. Para resetear Supabase: truncar tablas o recrear el proyecto.
+Al arrancar contra una **BD vacía** con `HELPDESK_DEMO_DATA=true`, `DemoDataLoader` siembra 9 tickets + comentarios.
+Sin el flag, prod no siembra. Si ya hay tickets, no se re-siembra.
 
-## Frontend (Firebase Hosting)
+Swagger/OpenAPI y actuator (salvo `health`) no están expuestos en prod.
 
-El frontend se despliega por separado en Firebase Hosting (estático).
-`firebase.json` reescribe `/api/**` hacia Cloud Run.
+## Frontend (Vercel)
 
-```bash
-cd frontend
-npm run build
-firebase deploy --only hosting
-```
+No hay rewrite `/api` en Vercel. El build inyecta `NG_APP_API_URL` (URL de este servicio Cloud Run) en `environment.ts`.
 
-Ver también: [docs/SETUP-GITHUB.md](../../docs/SETUP-GITHUB.md)
+Ver [docs/SETUP-GITHUB.md](../../docs/SETUP-GITHUB.md) sección 8.

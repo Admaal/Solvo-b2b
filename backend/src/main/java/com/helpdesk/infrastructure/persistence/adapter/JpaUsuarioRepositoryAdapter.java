@@ -1,5 +1,6 @@
 package com.helpdesk.infrastructure.persistence.adapter;
 
+import com.helpdesk.application.ports.CredencialesLogin;
 import com.helpdesk.application.ports.UsuarioRepository;
 import com.helpdesk.domain.model.Usuario;
 import com.helpdesk.domain.model.UsuarioId;
@@ -33,5 +34,11 @@ public class JpaUsuarioRepositoryAdapter implements UsuarioRepository {
     @Override
     public Optional<Usuario> buscarPorEmail(String email) {
         return usuarioRepository.findByEmail(email).map(usuarioMapper::toDomain);
+    }
+
+    @Override
+    public Optional<CredencialesLogin> buscarCredencialesPorEmail(String email) {
+        return usuarioRepository.findByEmail(email)
+                .map(entity -> new CredencialesLogin(usuarioMapper.toDomain(entity), entity.getPasswordHash()));
     }
 }

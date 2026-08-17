@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { TicketListComponent } from './ticket-list.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { TicketService } from '../../core/api/ticket.service';
@@ -123,5 +123,15 @@ describe('TicketListComponent', () => {
     component.verDetalle(ticketFixture);
 
     expect(router.navigate).toHaveBeenCalledWith(['/tickets', TICKET_ID]);
+  });
+
+  it('muestra error si listar falla', () => {
+    ticketService.listar.and.returnValue(throwError(() => new Error('network')));
+
+    fixture.detectChanges();
+
+    expect(component.error()).toContain('No se pudieron cargar los tickets');
+    expect(component.loading()).toBeFalse();
+    expect(component.tickets()).toEqual([]);
   });
 });

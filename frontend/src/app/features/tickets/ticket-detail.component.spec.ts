@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { TicketDetailComponent } from './ticket-detail.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { TicketService } from '../../core/api/ticket.service';
@@ -160,5 +160,15 @@ describe('TicketDetailComponent', () => {
     });
     expect(component.comentarios().length).toBe(1);
     expect(component.comentarios()[0].texto).toBe('Nuevo comentario');
+  });
+
+  it('muestra error si el ticket no carga', () => {
+    ticketService.obtener.and.returnValue(throwError(() => new Error('404')));
+
+    fixture.detectChanges();
+
+    expect(component.error()).toBe('No se pudo cargar el ticket.');
+    expect(component.ticket()).toBeNull();
+    expect(component.loading()).toBeFalse();
   });
 });

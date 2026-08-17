@@ -96,11 +96,9 @@ class TicketApiIntegracionIT {
                                 {
                                   "asunto": "Problema con extracto PDF",
                                   "descripcion": "El extracto mensual no se genera desde ayer.",
-                                  "organizacionId": "%s",
-                                  "clienteId": "%s",
                                   "codigoCategoria": "ACCESOS"
                                 }
-                                """.formatted(datos.organizacionId(), datos.clienteId())))
+                                """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.estado").value("ABIERTO"));
 
@@ -194,8 +192,8 @@ class TicketApiIntegracionIT {
         MvcResult login = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                { "email": "%s" }
-                                """.formatted(email)))
+                                { "email": "%s", "password": "%s" }
+                                """.formatted(email, DatosPruebaFactory.PASSWORD_DEMO)))
                 .andExpect(status().isOk())
                 .andReturn();
 

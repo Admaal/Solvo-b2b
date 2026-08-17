@@ -1,4 +1,4 @@
-# Despliegue demo: Firebase Hosting + Cloud Run (requiere gcloud y firebase CLI autenticados)
+# Despliegue de la API en Cloud Run. El frontend va en Vercel (NG_APP_API_URL).
 param(
     [Parameter(Mandatory = $true)]
     [string]$GcpProjectId,
@@ -6,14 +6,15 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$GcpRegion,
 
-    [string]$CorsOrigin = "https://TU_PROYECTO.web.app"
+    [Parameter(Mandatory = $true)]
+    [string]$CorsOrigin
 )
 
 $ErrorActionPreference = "Stop"
 $Root = Split-Path $PSScriptRoot -Parent
 $Image = "$GcpRegion-docker.pkg.dev/$GcpProjectId/helpdesk/helpdesk-backend:latest"
 
-Write-Host "==> Build imagen slim..."
+Write-Host "==> Build imagen Alpine..."
 docker build -t $Image "$Root\backend"
 
 Write-Host "==> Push Artifact Registry..."
@@ -31,15 +32,17 @@ gcloud run deploy helpdesk-api `
     --memory 512Mi `
     --cpu 1 `
     --port 8080 `
-    --set-env-vars "SPRING_PROFILES_ACTIVE=prod,CORS_ALLOWED_ORIGINS=$CorsOrigin" `
+    --set-env-vars "SPRING_PROFILES_ACTIVE=prod,HELPDESK_DEMO_DATA=true,CORS_ALLOWED_ORIGINS=$CorsOrigin" `
     --set-secrets "HELPDESK_RUNTIME_JSON=helpdesk-runtime:latest"
 
-Write-Host "==> Build frontend..."
-Push-Location "$Root\frontend"
-npm run build
+$ServiceUrl = gcloud run services describe helpdesk-api `
+    --region $GcpRegion `
+    --format "value(status.url)"
 
-Write-Host "==> Deploy Firebase Hosting..."
-firebase deploy --only hosting
-Pop-Location
-
-Write-Host "Demo desplegada. Verifica seed en Supabase (BD vacía en primer arranque)."
+Write-Host ""
+Write-Host "API desplegada: $ServiceUrl"
+Write-Host "Siguiente paso (Vercel):"
+Write-Host "  1. Root Directory = frontend"
+Write-Host "  2. Env NG_APP_API_URL = $ServiceUrl"
+Write-Host "  3. Redeploy. CORS ya apunta a $CorsOrigin"
+Write-Host "Seed demo: HELPDESK_DEMO_DATA=true (solo si la BD está vacía)."

@@ -54,6 +54,7 @@ export class TicketDetailComponent implements OnInit {
   readonly comentarios = signal<Comentario[]>([]);
   readonly slaVencimiento = signal<string | null>(null);
   readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
   readonly saving = signal(false);
   readonly enviandoComentario = signal(false);
 
@@ -84,6 +85,7 @@ export class TicketDetailComponent implements OnInit {
 
   cargar(id: string): void {
     this.loading.set(true);
+    this.error.set(null);
     this.ticketService.obtener(id).subscribe({
       next: (ticket) => {
         this.ticket.set(ticket);
@@ -91,7 +93,11 @@ export class TicketDetailComponent implements OnInit {
         this.cargarSla(id);
         this.cargarComentarios(id);
       },
-      error: () => this.loading.set(false),
+      error: () => {
+        this.ticket.set(null);
+        this.error.set('No se pudo cargar el ticket.');
+        this.loading.set(false);
+      },
     });
   }
 
@@ -150,7 +156,10 @@ export class TicketDetailComponent implements OnInit {
           this.snackBar.open('Comentario añadido', 'Cerrar', { duration: 3000 });
           this.enviandoComentario.set(false);
         },
-        error: () => this.enviandoComentario.set(false),
+        error: () => {
+          this.snackBar.open('No se pudo publicar el comentario', 'Cerrar', { duration: 4000 });
+          this.enviandoComentario.set(false);
+        },
       });
   }
 

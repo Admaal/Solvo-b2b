@@ -28,23 +28,17 @@ public class HelpdeskRuntimeSecretsEnvironmentPostProcessor implements Environme
 
         try {
             JsonNode node = MAPPER.readTree(json);
+            String[] required = {"DATABASE_URL", "DATABASE_USERNAME", "DATABASE_PASSWORD", "JWT_SECRET"};
             Map<String, Object> props = new HashMap<>();
-            mapIfPresent(node, props, "DATABASE_URL");
-            mapIfPresent(node, props, "DATABASE_USERNAME");
-            mapIfPresent(node, props, "DATABASE_PASSWORD");
-            mapIfPresent(node, props, "JWT_SECRET");
-
-            if (!props.isEmpty()) {
-                environment.getPropertySources().addFirst(new MapPropertySource(SOURCE_NAME, props));
+            for (String key : required) {
+                if (!node.hasNonNull(key) || node.get(key).asText().isBlank()) {
+                    throw new IllegalStateException("HELPDESK_RUNTIME_JSON no incluye " + key);
+                }
+                props.put(key, node.get(key).asText());
             }
+            environment.getPropertySources().addFirst(new MapPropertySource(SOURCE_NAME, props));
         } catch (Exception e) {
             throw new IllegalStateException("No se pudo parsear HELPDESK_RUNTIME_JSON", e);
-        }
-    }
-
-    private static void mapIfPresent(JsonNode node, Map<String, Object> props, String key) {
-        if (node.hasNonNull(key) && !node.get(key).asText().isBlank()) {
-            props.put(key, node.get(key).asText());
         }
     }
 }

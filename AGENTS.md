@@ -25,20 +25,20 @@ Todas las fases del roadmap (1–6) están implementadas.
 
 | Capa | Resultado verificado |
 |------|----------------------|
-| Unitarios + ArchUnit | 51/51 (`mvnw test`) |
-| PIT | 84% mutaciones matadas (≥ 75%) |
-| Integración (`*IT.java`) | 5/5 ejecutados, 0 skipped (`mvnw verify`) |
+| Unitarios + ArchUnit | 59/59 (`mvnw test`) |
+| PIT | 78% mutaciones matadas (≥ 75%; también en CI) |
+| Integración (`*IT.java`) | 6/6 ejecutados, 0 skipped (`mvnw verify`) |
 
-**Testcontainers:** requiere el **daemon de Docker** (no basta `docker compose up` del Postgres local). Los IT usan `@ActiveProfiles("integration-test")`, `application-integration-test.properties` (JPA activo) y `testcontainers.version` **1.21.4** en `pom.xml`. Criterio de cierre: `Tests run: 5, Failures: 0, Errors: 0, Skipped: 0` en `TicketApiIntegracionIT` + `TicketFlujoIntegracionIT`.
+**Testcontainers:** requiere el **daemon de Docker** (no basta `docker compose up` del Postgres local). Los IT usan `@ActiveProfiles("integration-test")`, `application-integration-test.properties` (JPA activo) y `testcontainers.version` **1.21.4** en `pom.xml`. Criterio de cierre: `Tests run: 6, Failures: 0, Errors: 0, Skipped: 0` en `TicketApiIntegracionIT` + `TicketFlujoIntegracionIT` + `AislamientoTenantIT`.
 
 ### Frontend — COMPLETO
 
 | Ámbito | Resultado verificado |
 |--------|----------------------|
-| Jasmine/Karma | **30/30** SUCCESS (headless) |
+| Jasmine/Karma | **33/33** SUCCESS (headless) |
 | Specs | 8 archivos `.spec.ts` — auth, app shell, tickets (list/detail/create), admin-placeholder |
 
-Cada componente de feature tiene spec con mocks de servicios y asserts de comportamiento (no solo `should create`). Criterio de cierre: `TOTAL: 30 SUCCESS` tras el gate rápido frontend.
+Cada componente de feature tiene spec con mocks de servicios y asserts de comportamiento (no solo `should create`). Criterio de cierre: `TOTAL: 33 SUCCESS` tras el gate rápido frontend.
 
 ## Invariantes
 
@@ -54,10 +54,11 @@ cd backend; .\mvnw.cmd spring-boot:run
 cd frontend; npm start
 ```
 
-Usuarios demo: `cliente@bancoa.demo`, `gestor@bancoa.demo`, `admin@bancoa.demo`
+Usuarios demo: `cliente@bancoa.demo`, `gestor@bancoa.demo`, `admin@bancoa.demo` (contraseña `demo`)
 
 ## Documentación
 
 - `docs/PORTFOLIO.md` — narrativa para reclutadores
-- `docs/SETUP-GITHUB.md` — checklist repo + GCP + Firebase
+- `docs/SETUP-GITHUB.md` — checklist repo + GCP + Vercel
 - `deploy/cloudrun/README.md` — detalle Cloud Run
+- `docs/supabase-schema.sql` — tablas para prod (`ddl-auto=validate`)

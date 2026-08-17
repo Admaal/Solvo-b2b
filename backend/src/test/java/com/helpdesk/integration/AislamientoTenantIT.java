@@ -1,11 +1,13 @@
 package com.helpdesk.integration;
 
-import com.helpdesk.application.usecases.AsignarTicket;
 import com.helpdesk.application.usecases.CambiarEstadoTicket;
 import com.helpdesk.application.usecases.CrearTicket;
+import com.helpdesk.domain.exception.AccesoDenegadoException;
 import com.helpdesk.domain.model.EstadoTicket;
 import com.helpdesk.domain.model.OrganizacionId;
+import com.helpdesk.domain.model.Rol;
 import com.helpdesk.domain.model.Ticket;
+import com.helpdesk.domain.model.Usuario;
 import com.helpdesk.domain.model.UsuarioId;
 import com.helpdesk.integration.support.DatosPruebaFactory;
 import com.helpdesk.integration.support.DatosPruebaFactory.DatosOrganizacion;
@@ -25,14 +27,13 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("integration-test")
 @Transactional
 @Testcontainers(disabledWithoutDocker = true)
-class TicketFlujoIntegracionIT {
+class AislamientoTenantIT {
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
@@ -49,9 +50,6 @@ class TicketFlujoIntegracionIT {
     private CrearTicket crearTicket;
 
     @Autowired
-    private AsignarTicket asignarTicket;
-
-    @Autowired
     private CambiarEstadoTicket cambiarEstadoTicket;
 
     @Autowired
@@ -66,64 +64,37 @@ class TicketFlujoIntegracionIT {
     @Autowired
     private SpringDataUsuarioRepository usuarioRepository;
 
-    private DatosOrganizacion datos;
+    private DatosOrganizacion orgA;
+    private DatosOrganizacion orgB;
 
     @BeforeEach
-    void sembrarDatos() {
-        datos = DatosPruebaFactory.sembrar(
-                organizacionRepository,
-                equipoRepository,
-                categoriaRepository,
-                usuarioRepository
-        );
+    void sembrar() {
+        orgA = DatosPruebaFactory.sembrar(
+                organizacionRepository, equipoRepository, categoriaRepository, usuarioRepository);
+        orgB = DatosPruebaFactory.sembrarOtraOrganizacion(
+                organizacionRepository, equipoRepository, usuarioRepository);
     }
 
     @Test
-    void flujoCompletoCrearAsignarCambiarEstado() {
-        Ticket creado = crearTicket.ejecutar(new CrearTicket.Comando(
-                "No puedo acceder",
-                "Portal devuelve 403",
-                OrganizacionId.of(datos.organizacionId()),
-                UsuarioId.of(datos.clienteId()),
-                datos.codigoCategoria()
+    void gestorDeOrgBNoCambiaEstadoDeTicketDeOrgA() {
+        Ticket ticketA = crearTicket.ejecutar(new CrearTicket.Comando(
+                "Ticket banco A",
+                "Incidencia exclusiva del tenant A.",
+                OrganizacionId.of(orgA.organizacionId()),
+                UsuarioId.of(orgA.clienteId()),
+                orgA.codigoCategoria()
         ));
 
-        assertEquals(EstadoTicket.ABIERTO, creado.estado());
+        Usuario gestorB = new Usuario(
+                UsuarioId.of(orgB.gestorId()),
+                "gestor@bancob.test",
+                OrganizacionId.of(orgB.organizacionId()),
+                Rol.GESTOR,
+                null
+        );
 
-        Ticket asignado = asignarTicket.ejecutar(new AsignarTicket.Comando(
-                creado.id(),
-                UsuarioId.of(datos.gestorId()),
-                UsuarioId.of(datos.gestorId())
+        assertThrows(AccesoDenegadoException.class, () -> cambiarEstadoTicket.ejecutar(
+                new CambiarEstadoTicket.Comando(gestorB, ticketA.id(), EstadoTicket.EN_PROGRESO)
         ));
-
-        assertNotNull(asignado.agenteAsignadoId());
-
-        Ticket enProgreso = cambiarEstadoTicket.ejecutar(new CambiarEstadoTicket.Comando(
-                new com.helpdesk.domain.model.Usuario(
-                        UsuarioId.of(datos.gestorId()),
-                        DatosPruebaFactory.GESTOR_EMAIL,
-                        OrganizacionId.of(datos.organizacionId()),
-                        com.helpdesk.domain.model.Rol.GESTOR,
-                        null
-                ),
-                creado.id(),
-                EstadoTicket.EN_PROGRESO
-        ));
-
-        assertEquals(EstadoTicket.EN_PROGRESO, enProgreso.estado());
-
-        Ticket resuelto = cambiarEstadoTicket.ejecutar(new CambiarEstadoTicket.Comando(
-                new com.helpdesk.domain.model.Usuario(
-                        UsuarioId.of(datos.gestorId()),
-                        DatosPruebaFactory.GESTOR_EMAIL,
-                        OrganizacionId.of(datos.organizacionId()),
-                        com.helpdesk.domain.model.Rol.GESTOR,
-                        null
-                ),
-                creado.id(),
-                EstadoTicket.RESUELTO
-        ));
-
-        assertEquals(EstadoTicket.RESUELTO, resuelto.estado());
     }
 }

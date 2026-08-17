@@ -1,6 +1,9 @@
 const path = require('path');
 const { chromium } = require('playwright');
 
+const baseUrl = process.env.SCREENSHOT_BASE_URL || 'http://localhost:4200';
+const apiUrl = process.env.SCREENSHOT_API_URL || 'http://localhost:8080';
+
 const root = path.join(__dirname, '..');
 const outDir = path.join(root, 'docs', 'screenshots');
 
@@ -8,7 +11,7 @@ const outDir = path.join(root, 'docs', 'screenshots');
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
 
-  await page.goto('http://localhost:4200/auth/login');
+  await page.goto(`${baseUrl}/auth/login`);
   await page.waitForTimeout(2000);
   await page.screenshot({ path: path.join(outDir, '01-login.png'), fullPage: true });
 
@@ -25,7 +28,7 @@ const outDir = path.join(root, 'docs', 'screenshots');
     await page.screenshot({ path: path.join(outDir, '03-ticket-detalle.png'), fullPage: true });
   }
 
-  await page.goto('http://localhost:8080/swagger-ui.html');
+  await page.goto(`${apiUrl}/swagger-ui.html`);
   await page.waitForTimeout(2000);
   await page.screenshot({ path: path.join(outDir, '04-swagger.png'), fullPage: true });
 

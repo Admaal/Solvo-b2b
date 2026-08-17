@@ -35,8 +35,8 @@ export class TicketCreateComponent {
   readonly saving = signal(false);
 
   readonly form = this.fb.nonNullable.group({
-    asunto: ['', [Validators.required, Validators.minLength(5)]],
-    descripcion: ['', [Validators.required, Validators.minLength(10)]],
+    asunto: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200)]],
+    descripcion: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(4000)]],
     codigoCategoria: ['ACCESOS', Validators.required],
   });
 
@@ -65,8 +65,6 @@ export class TicketCreateComponent {
         asunto: this.form.controls.asunto.value,
         descripcion: this.form.controls.descripcion.value,
         codigoCategoria: this.form.controls.codigoCategoria.value,
-        organizacionId,
-        clienteId,
       })
       .subscribe({
         next: (ticket) => {

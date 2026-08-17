@@ -17,7 +17,7 @@ git push -u origin main
 
 El workflow `.github/workflows/ci.yml` se ejecuta en cada push/PR a `main`:
 
-- Tests backend (unitarios + Testcontainers)
+- Tests backend (unitarios + PIT + Testcontainers)
 - Tests frontend (Jasmine + build)
 - Helm lint + kubeconform
 - Docker build (imagen slim)
@@ -45,7 +45,9 @@ En **Settings → Secrets and variables → Actions → Variables**:
 
 | Variable | Ejemplo |
 |----------|---------|
-| `CORS_ALLOWED_ORIGINS` | `https://tu-app.web.app` |
+| `CORS_ALLOWED_ORIGINS` | `https://tu-app.vercel.app` |
+
+Puedes poner primero la URL de preview de Vercel y ajustarla cuando exista el dominio de producción.
 
 ## 5. Google Cloud (una sola vez)
 
@@ -71,19 +73,25 @@ gcloud secrets create helpdesk-runtime --data-file=runtime.json
 rm runtime.json
 ```
 
+`JWT_SECRET` no puede ser el valor por defecto de `application.properties`: en `prod` el arranque falla a propósito.
+
 Detalle completo: [deploy/cloudrun/README.md](../deploy/cloudrun/README.md)
 
 ## 6. Supabase (base de datos prod)
 
 1. Crear proyecto nuevo (free tier).
 2. Copiar connection string (Session pooler, puerto 5432).
-3. **Primera vez:** arrancar el backend local apuntando a Supabase con `ddl-auto=update` (perfil default en local) para crear tablas, o usar SQL manual.
-4. En prod Cloud Run usa `ddl-auto=validate` — las tablas deben existir antes del deploy.
+3. **Antes de Cloud Run con `ddl-auto=validate`:** crear tablas.
+   - Opción A: ejecutar [docs/supabase-schema.sql](supabase-schema.sql) en el SQL Editor.
+   - Opción B: arrancar el backend **local** apuntando a Supabase con perfil `local` (`ddl-auto=update`) una sola vez.
+4. En prod Cloud Run usa `validate` — las tablas deben existir antes del deploy.
+
+Si la BD ya tenía esquema sin `password_hash`, añade la columna o recrea el proyecto.
 
 ### Seed demo para reclutadores
 
-`DemoDataLoader` siembra **9 tickets** + comentarios solo si `tickets` está vacío.
-Para ver el seed en Supabase: truncar tablas o proyecto nuevo, luego desplegar Cloud Run.
+`DemoDataLoader` siembra **9 tickets** + comentarios solo si `tickets` está vacío **y** `HELPDESK_DEMO_DATA=true`.
+CI/Cloud Run de demo pasan ese flag. Para ver el seed en Supabase: truncar tablas o proyecto nuevo, luego desplegar.
 
 ## 7. Reset BD local (ver seed nuevo)
 
@@ -94,22 +102,26 @@ cd backend
 .\mvnw.cmd spring-boot:run
 ```
 
-## 8. Firebase Hosting (frontend)
+## 8. Vercel (frontend) — después de tener URL de Cloud Run
 
-```bash
-cd frontend
-cp .firebaserc.example .firebaserc   # editar projectId
-npm run build
-npm install -g firebase-tools
-firebase login
-firebase deploy --only hosting
-```
+El SPA **no** hace proxy `/api` en producción: llama a Cloud Run por URL absoluta.
 
-`firebase.json` reescribe `/api/**` hacia Cloud Run — no hace falta hardcodear la URL del backend en producción.
+1. Importar el repo en Vercel.
+2. **Root Directory:** `frontend`
+3. El `vercel.json` ya define rewrite SPA → `index.html` y el build (`node set-api-url.cjs && npm run build`).
+4. Variable de entorno de **build**:
+
+| Variable | Valor |
+|----------|-------|
+| `NG_APP_API_URL` | URL de Cloud Run, p. ej. `https://helpdesk-api-xxxxx.run.app` |
+
+5. Deploy. Actualiza `CORS_ALLOWED_ORIGINS` (GitHub variable + Cloud Run) con `https://tu-proyecto.vercel.app`.
+
+No despliegues Vercel a producción sin `NG_APP_API_URL`: el build local por defecto usa `/api/v1` (solo válido detrás del proxy de `ng serve`).
 
 ## 9. Verificar CI
 
-Tras el primer push, revisa la pestaña **Actions** en GitHub. Todo debe estar en verde.
+Tras el primer push, revisa la pestaña **Actions** en GitHub. Todo debe estar en verde, incluido PIT.
 
 ## 10. Capturas para portfolio
 

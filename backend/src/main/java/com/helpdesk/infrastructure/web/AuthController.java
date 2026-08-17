@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@Tag(name = "Autenticación", description = "Login demo por email")
+@Tag(name = "Autenticación", description = "Login demo con email y contraseña")
 public class AuthController {
 
     private final AuthService authService;
@@ -23,7 +23,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Iniciar sesión demo con email")
+    @Operation(summary = "Iniciar sesión demo")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }

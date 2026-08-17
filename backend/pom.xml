@@ -125,6 +125,9 @@
                     <layers>
                         <enabled>true</enabled>
                     </layers>
+                    <profiles>
+                        <profile>local</profile>
+                    </profiles>
                 </configuration>
             </plugin>
             <plugin>

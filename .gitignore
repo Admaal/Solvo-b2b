@@ -33,6 +33,9 @@ scripts/node_modules/
 repomix-output.xml
 repomix-output.*
 
-# Firebase local
+# Firebase local (legado)
 .firebase/
 frontend/.firebase/
+
+# Vercel
+frontend/.vercel/

@@ -141,6 +141,10 @@ public class Ticket {
             throw new AsignacionNoPermitidaException("Solo administradores y gestores pueden asignar tickets");
         }
 
+        if (!solicitante.perteneceA(organizacionId)) {
+            throw new AsignacionNoPermitidaException("No puede asignar tickets de otra organización");
+        }
+
         if (!agente.perteneceA(organizacionId)) {
             throw new AsignacionNoPermitidaException("El agente no pertenece a la organización del ticket");
         }
