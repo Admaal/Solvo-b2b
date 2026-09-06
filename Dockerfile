@@ -1,14 +1,13 @@
-# Build
+# Render MCP no puede fijar rootDir; el contexto es la raíz del repo.
 FROM maven:3.9-eclipse-temurin-21-alpine AS build
 WORKDIR /app
 
-COPY pom.xml .
+COPY backend/pom.xml .
 RUN mvn -B -q dependency:go-offline
 
-COPY src ./src
+COPY backend/src ./src
 RUN mvn -B -q -DskipTests package
 
-# Runtime — fat JAR sobre JRE Alpine (~210 MB)
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 

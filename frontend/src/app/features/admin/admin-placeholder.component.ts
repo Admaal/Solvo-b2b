@@ -17,7 +17,7 @@ import { RouterLink } from '@angular/router';
         versión de portfolio — el foco está en tickets, comentarios y calidad de ingeniería.
       </p>
       <p class="admin-hero__note">
-        Auth demo: login por email sin contraseña, pensado para reclutadores que prueben
+        Auth demo: email de rol + contraseña demo, pensado para reclutadores que prueben
         la app en segundos.
       </p>
     </section>

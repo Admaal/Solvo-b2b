@@ -1,0 +1,25 @@
+# Blueprint de la API Java en Render (demo de portfolio).
+# BD: Supabase. Frontend: Vercel. No incluye Cloud Run.
+services:
+  - type: web
+    name: helpdesk-api
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: HELPDESK_DEMO_DATA
+        value: "true"
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_USERNAME
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false

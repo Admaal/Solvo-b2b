@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 if (process.env.VERCEL && !process.env.NG_APP_API_URL) {
-  console.error('NG_APP_API_URL es obligatorio en Vercel (URL de Cloud Run, sin slash final).');
+  console.error('NG_APP_API_URL es obligatorio en Vercel (URL de Render, sin slash final).');
   process.exit(1);
 }
 

@@ -20,7 +20,11 @@ const outDir = path.join(root, 'docs', 'screenshots');
   await page.waitForTimeout(2000);
   await page.screenshot({ path: path.join(outDir, '02-tickets-grid.png'), fullPage: true });
 
-  const detalle = page.getByRole('button', { name: /Ver detalle/i }).first();
+  const detalle = page
+    .locator('article')
+    .filter({ hasText: /Transferencia internacional/i })
+    .getByRole('button', { name: /Ver detalle/i })
+    .first();
   if (await detalle.count()) {
     await detalle.click();
     await page.waitForURL('**/tickets/**');

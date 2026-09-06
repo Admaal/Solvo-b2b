@@ -11,8 +11,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Expande un único secret JSON de Cloud Run ({@code HELPDESK_RUNTIME_JSON})
- * en propiedades de entorno estándar usadas por Spring Boot.
+ * Expande un único secret JSON ({@code HELPDESK_RUNTIME_JSON}) en propiedades
+ * de entorno estándar. En Render las variables se inyectan sueltas; este
+ * procesador queda en no-op si el JSON no está presente.
  */
 public class HelpdeskRuntimeSecretsEnvironmentPostProcessor implements EnvironmentPostProcessor {
 

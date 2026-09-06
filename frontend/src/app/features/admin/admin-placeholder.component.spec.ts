@@ -21,4 +21,13 @@ describe('AdminPlaceholderComponent', () => {
     expect(fixture.componentInstance).toBeTruthy();
     expect(element.textContent).toContain('Ruta protegida (demo RBAC)');
   });
+
+  it('explains demo auth uses email and password demo', () => {
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    const text = element.textContent ?? '';
+
+    expect(text).toContain('contraseña demo');
+    expect(text).not.toContain('sin contraseña');
+  });
 });

@@ -1,0 +1,21 @@
+name: Keep-alive demo API
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: GET /actuator/health
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health
+        env:
+          HEALTH_URL: ${{ vars.DEMO_API_HEALTH_URL }}
+        run: |
+          if [ -z "$HEALTH_URL" ]; then
+            echo "DEMO_API_HEALTH_URL no configurada — ping omitido."
+            exit 0
+          fi
+          curl -fsS --retry 2 --retry-delay 5 --max-time 90 "$HEALTH_URL"

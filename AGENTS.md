@@ -35,7 +35,7 @@ Todas las fases del roadmap (1–6) están implementadas.
 
 | Ámbito | Resultado verificado |
 |--------|----------------------|
-| Jasmine/Karma | **33/33** SUCCESS (headless) |
+| Jasmine/Karma | **34/34** SUCCESS (headless) |
 | Specs | 8 archivos `.spec.ts` — auth, app shell, tickets (list/detail/create), admin-placeholder |
 
 Cada componente de feature tiene spec con mocks de servicios y asserts de comportamiento (no solo `should create`). Criterio de cierre: `TOTAL: 33 SUCCESS` tras el gate rápido frontend.
@@ -59,6 +59,6 @@ Usuarios demo: `cliente@bancoa.demo`, `gestor@bancoa.demo`, `admin@bancoa.demo` 
 ## Documentación
 
 - `docs/PORTFOLIO.md` — narrativa para reclutadores
-- `docs/SETUP-GITHUB.md` — checklist repo + GCP + Vercel
-- `deploy/cloudrun/README.md` — detalle Cloud Run
+- `docs/SETUP-GITHUB.md` — checklist repo + Supabase + Render + Vercel
+- `docs/specs/deploy/demo-render-supabase-vercel.md` — spec de la demo pública
 - `docs/supabase-schema.sql` — tablas para prod (`ddl-auto=validate`)

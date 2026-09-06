@@ -11,7 +11,7 @@ Demuestra arquitectura hexagonal real, RBAC navegable, comentarios en tickets, A
 | Frontend | Angular 19, Standalone, Signals, Angular Material |
 | Base de datos | PostgreSQL (local Docker / Supabase en prod) |
 | Tests | JUnit 5, Mockito, ArchUnit, PIT, Testcontainers, Jasmine |
-| Infra | Docker slim, Helm, GitHub Actions, Cloud Run, Vercel |
+| Infra | Docker slim, Helm, GitHub Actions, Render, Vercel, Supabase |
 
 ## Arquitectura hexagonal
 
@@ -21,7 +21,7 @@ Demuestra arquitectura hexagonal real, RBAC navegable, comentarios en tickets, A
 │  JWT interceptor · Guards por rol                         │
 └────────────────────────┬────────────────────────────────┘
                          │ REST /api/v1
-┌────────────────────────▼────────────────────────────────┐
+┌─────────────────────────────────────────────────────────┐
 │  infrastructure/web     ← controladores, DTOs           │
 │  infrastructure/security← JWT filter                    │
 │  infrastructure/persistence ← adaptadores JPA           │
@@ -86,17 +86,17 @@ Generar: `.\scripts\capture-screenshots.ps1`
 
 | Entorno | Plataforma | Motivo |
 |---------|------------|--------|
-| Demo pública API | Cloud Run (`min-instances=0`) | Coste $0 en reposo |
-| Frontend | Vercel | Estático SPA; llama a Cloud Run por URL absoluta |
-| Portfolio K8s | Helm en `kind` bajo demanda | Competencia K8s sin GKE 24/7 |
-| BD producción | Supabase free tier | Evita Cloud SQL de pago |
-| Secretos | Un JSON en Secret Manager | Cuota free tier (1 secret) |
-| Imagen Docker | JRE Alpine + fat JAR | ~210 MB; borrar digests antiguos en registry |
+| Demo pública API | Render (plan free + keep-alive cada 5 min) | Java no corre en Supabase; sin duplicar un proyecto GCP |
+| Frontend | Vercel | Estático SPA; llama a Render por URL absoluta |
+| Portfolio K8s | Helm en `kind` bajo demanda | Competencia K8s sin clúster 24/7 |
+| BD producción | Supabase free tier (Session pooler 5432) | Postgres gestionado; Hibernate no usa el pooler 6543 |
+| Secretos | Variables de entorno en Render / Vercel | Sin JSON de Secret Manager |
+| Imagen Docker | JRE Alpine + fat JAR | ~210 MB |
 
-Orden de go-live: esquema Supabase → Cloud Run → Vercel con `NG_APP_API_URL`.
+Orden de go-live: esquema Supabase → Render → Vercel con `NG_APP_API_URL`.
 
 ## Enlaces
 
 - Repositorio: https://github.com/Admaal/Solvo-b2b
-- Demo live: desplegar con [docs/SETUP-GITHUB.md](SETUP-GITHUB.md) o `scripts/deploy-demo.ps1` (API) + Vercel
+- Demo live: pegar la URL de Vercel tras [docs/SETUP-GITHUB.md](SETUP-GITHUB.md)
 - API Swagger: solo local — http://localhost:8080/swagger-ui.html
