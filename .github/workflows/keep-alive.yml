@@ -12,10 +12,20 @@ jobs:
     steps:
       - name: Ping health
         env:
-          HEALTH_URL: ${{ vars.DEMO_API_HEALTH_URL }}
+          HEALTH_URL: ${{ vars.DEMO_API_HEALTH_URL || secrets.DEMO_API_HEALTH_URL }}
         run: |
           if [ -z "$HEALTH_URL" ]; then
             echo "DEMO_API_HEALTH_URL no configurada — ping omitido."
             exit 0
           fi
-          curl -fsS --retry 2 --retry-delay 5 --max-time 90 "$HEALTH_URL"
+          # Cold start de la JVM en Render free ~2 min; un curl de 90s falla y el servicio sigue dormido.
+          for i in $(seq 1 15); do
+            if curl -fsS --max-time 20 "$HEALTH_URL"; then
+              echo "health OK (intento $i)"
+              exit 0
+            fi
+            echo "intento $i fallido; reintento en 15s"
+            sleep 15
+          done
+          echo "health no respondió tras el arranque en frío"
+          exit 1

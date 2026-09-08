@@ -98,5 +98,5 @@ Orden de go-live: esquema Supabase → Render → Vercel con `NG_APP_API_URL`.
 ## Enlaces
 
 - Repositorio: https://github.com/Admaal/Solvo-b2b
-- Demo live: pegar la URL de Vercel tras [docs/SETUP-GITHUB.md](SETUP-GITHUB.md)
+- Demo live: https://frontend-rouge-rho-30.vercel.app
 - API Swagger: solo local — http://localhost:8080/swagger-ui.html

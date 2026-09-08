@@ -5,8 +5,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { timeout, TimeoutError } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { DEMO_USERS, DemoUser } from '../../core/models/auth.model';
+
+const LOGIN_TIMEOUT_MS = 120_000;
 
 @Component({
   selector: 'app-login',
@@ -53,10 +56,15 @@ export class LoginComponent {
     this.loading.set(true);
     this.error.set(null);
 
-    this.auth.login({ email, password }).subscribe({
+    this.auth.login({ email, password }).pipe(timeout(LOGIN_TIMEOUT_MS)).subscribe({
       next: () => this.router.navigate(['/tickets']),
-      error: () => {
-        this.error.set('No se pudo iniciar sesión. Verifica email, contraseña y que el backend esté en marcha.');
+      error: (err: unknown) => {
+        const coldStart = err instanceof TimeoutError || (err as { name?: string })?.name === 'TimeoutError';
+        this.error.set(
+          coldStart
+            ? 'El API de demo se está despertando (Render free). Espera unos segundos y vuelve a pulsar.'
+            : 'No se pudo iniciar sesión. Verifica email, contraseña y que el backend esté en marcha.'
+        );
         this.loading.set(false);
       },
       complete: () => this.loading.set(false),

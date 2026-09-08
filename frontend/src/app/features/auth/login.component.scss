@@ -54,9 +54,16 @@
   }
 
   &__subtitle {
-    margin: var(--spacing-8) 0 var(--spacing-24);
+    margin: var(--spacing-8) 0 var(--spacing-8);
     color: var(--color-graphite);
     font-size: var(--text-caption);
+  }
+
+  &__hint {
+    margin: 0 0 var(--spacing-24);
+    color: var(--color-graphite);
+    font-size: var(--text-caption);
+    line-height: 1.4;
   }
 }
 

@@ -31,7 +31,7 @@ Como **reclutador**, quiero **abrir una URL, entrar como cliente/gestor/admin y 
 
 ## Criterios de aceptación (EARS)
 
-- [ ] **AC-01:** WHEN un visitante abre la URL de Vercel THE SPA SHALL cargar el login demo sin backend local.
+- [x] **AC-01:** WHEN un visitante abre la URL de Vercel THE SPA SHALL cargar el login demo sin backend local.
 - [ ] **AC-02:** WHEN elige “Entrar como Cliente/Gestor/Admin” THE system SHALL autenticar con email + `demo` y mostrar el listado del rol.
 - [ ] **AC-03:** WHEN el gestor cambia un estado válido THE system SHALL persistirlo en Supabase y reflejarlo al recargar.
 - [x] **AC-04:** IF `JWT_SECRET` falta, es el default o tiene menos de 32 caracteres THEN THE API en `prod` SHALL no arrancar.

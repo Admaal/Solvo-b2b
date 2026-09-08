@@ -12,9 +12,9 @@ Sistema de gestión de incidencias corporativas — **Java 21 + Spring Boot + An
 | Entorno | Cómo probar |
 |---------|-------------|
 | Local | Ver [Demo rápida](#demo-rápida-local) |
-| Pública | Vercel + Render + Supabase — [docs/SETUP-GITHUB.md](docs/SETUP-GITHUB.md) |
+| Pública | [https://frontend-rouge-rho-30.vercel.app](https://frontend-rouge-rho-30.vercel.app) — API [helpdesk-api-vq5a.onrender.com](https://helpdesk-api-vq5a.onrender.com/actuator/health) |
 
-Cuando exista la URL de Vercel, pégala aquí (paso 6 de la guía). Repositorio: [github.com/Admaal/Solvo-b2b](https://github.com/Admaal/Solvo-b2b).
+Usuarios demo: `cliente@bancoa.demo`, `gestor@bancoa.demo`, `admin@bancoa.demo` (contraseña `demo`). Repositorio: [github.com/Admaal/Solvo-b2b](https://github.com/Admaal/Solvo-b2b).
 
 ### Capturas
 

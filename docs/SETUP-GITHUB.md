@@ -32,7 +32,7 @@ En **Settings → Secrets and variables → Actions → Variables** (después de
 
 | Variable | Ejemplo |
 |----------|---------|
-| `DEMO_API_HEALTH_URL` | `https://helpdesk-api.onrender.com/actuator/health` |
+| `DEMO_API_HEALTH_URL` | `https://helpdesk-api-vq5a.onrender.com/actuator/health` |
 
 Sin esta variable el cron termina en éxito y no pinea nada.
 
@@ -42,10 +42,10 @@ Proyecto ya creado: **solvo-b2b-helpdesk** (`bhdglymhjmsjlcgbxnbg`, `eu-west-1`)
 Dashboard: https://supabase.com/dashboard/project/bhdglymhjmsjlcgbxnbg
 El esquema JPA + RLS ya está aplicado. No crees otro proyecto.
 
-1. En **Project Settings → Database** copia la **Database password** (el MCP no la devuelve).
+1. La contraseña de `postgres` **no se puede ver** después de crear el proyecto (Supabase no la guarda en claro). Hay que **resetearla**: [Database Settings](https://supabase.com/dashboard/project/bhdglymhjmsjlcgbxnbg/database/settings) → sección **Database password** → **Reset password**. El pooler no acepta el rol JDBC `helpdesk_app`; usa `postgres.bhdglymhjmsjlcgbxnbg`.
 2. Connection string del **Session pooler**, puerto **5432** (no el pooler de transacciones 6543: Hibernate no encaja).
-   - Host: `aws-0-eu-west-1.pooler.supabase.com`
-   - User: `helpdesk_app.bhdglymhjmsjlcgbxnbg`
+   - Host: `aws-1-eu-west-1.pooler.supabase.com` (no `aws-0`: este proyecto está en el cluster aws-1; el otro responde tenant not found)
+   - User: `postgres.bhdglymhjmsjlcgbxnbg`
    - Database: `postgres`
 3. **Antes** del primer Render con `ddl-auto=validate`: crear tablas.
    - Opción A: ejecutar [docs/supabase-schema.sql](supabase-schema.sql) en el SQL Editor.
@@ -77,7 +77,7 @@ Render de demo pasa ese flag. Un segundo deploy **no** duplica filas. Para ver e
 | `DATABASE_USERNAME` | `postgres` (o el user del pooler) |
 | `DATABASE_PASSWORD` | password de Supabase |
 | `JWT_SECRET` | ≥ 32 caracteres, **distinto** del default de `application.properties` |
-| `CORS_ALLOWED_ORIGINS` | `https://tu-app.vercel.app` (ajusta tras el paso 6) |
+| `CORS_ALLOWED_ORIGINS` | `https://frontend-rouge-rho-30.vercel.app` |
 
 Render inyecta `PORT`; Spring ya usa `server.port=${PORT:8080}`.
 
@@ -98,13 +98,18 @@ El SPA **no** hace proxy `/api` en producción: llama a Render por URL absoluta.
 
 | Variable | Valor |
 |----------|-------|
-| `NG_APP_API_URL` | URL de Render, p. ej. `https://helpdesk-api.onrender.com` |
+| `NG_APP_API_URL` | `https://helpdesk-api-vq5a.onrender.com` |
 
-5. Deploy. Actualiza `CORS_ALLOWED_ORIGINS` en Render con `https://tu-proyecto.vercel.app` y redespliega la API si hace falta.
+5. Deploy. `CORS_ALLOWED_ORIGINS` en Render ya apunta a `https://frontend-rouge-rho-30.vercel.app`.
+
+Demo pública: https://frontend-rouge-rho-30.vercel.app  
+API: https://helpdesk-api-vq5a.onrender.com
+
+El CLI no debe subir `node_modules` (límite 100 MB): hay `frontend/.vercelignore`. El root directory del proyecto Vercel es `frontend`.
+
+JDBC al Session pooler necesita `channelBinding=disable` y `gssEncMode=disable` en `DATABASE_URL`; si no, PgJDBC falla con `password authentication failed` aunque la clave sea correcta.
 
 No despliegues Vercel a producción sin `NG_APP_API_URL`: el build local por defecto usa `/api/v1` (solo válido detrás del proxy de `ng serve`).
-
-Cuando tengas la URL de Vercel, pégala en [README.md](../README.md) y [docs/PORTFOLIO.md](PORTFOLIO.md) en el hueco de **Demo**.
 
 ## 7. Reset BD local (ver seed nuevo)
 
